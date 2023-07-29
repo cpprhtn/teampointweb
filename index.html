@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>팀편성과 순위 페이지</title>
+    <style>
+        /* CSS 스타일링 */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <h2>학생 등록</h2>
+    <input type="text" id="studentName" placeholder="학생 이름">
+    <button onclick="addStudent()">등록</button>
+
+    <h2>팀 편성</h2>
+    <button onclick="createTeams()">팀 편성</button>
+
+    <h2>학생 정보</h2>
+    <table>
+        <tr>
+            <th>학생</th>
+            <th>점수</th>
+            <th>부여</th>
+        </tr>
+        <tbody id="studentTable">
+            <!-- 여기에 학생 정보가 자동으로 추가될 예정 -->
+        </tbody>
+    </table>
+
+    <h2>팀 정보</h2>
+    <table>
+        <tr>
+            <th>팀</th>
+            <th>점수</th>
+            <th>부여</th>
+        </tr>
+        <tbody id="teamTable">
+            <!-- 여기에 팀 정보가 자동으로 추가될 예정 -->
+        </tbody>
+    </table>
+
+    <h2>순위</h2>
+    <table>
+        <tr>
+            <th>순위</th>
+            <th>팀</th>
+        </tr>
+        <tbody id="rankTable">
+            <!-- 여기에 순위 정보가 자동으로 추가될 예정 -->
+        </tbody>
+    </table>
+
+    <script>
+        const teamNames = ['팀 A', '팀 B', '팀 C'];
+        const students = [];
+        const teams = [];
+
+        function addStudent() {
+            const studentName = document.getElementById('studentName').value;
+            students.push({ name: studentName, score: 0 });
+            document.getElementById('studentName').value = '';
+            displayStudents();
+        }
+
+        function createTeams() {
+            teamTable.innerHTML = '';
+            for (let i = 0; i < students.length; i++) {
+                const randomTeamIndex = Math.floor(Math.random() * teamNames.length);
+                const teamName = teamNames[randomTeamIndex];
+                const row = teamTable.insertRow();
+                row.insertCell().textContent = teamName;
+                row.insertCell().textContent = students[i].name;
+                row.insertCell().textContent = students[i].score;
+                row.insertCell().innerHTML = '<input type="number" min="0" max="100" onchange="updateScore(this, ' + i + ')">';
+            }
+        }
+
+        function updateScore(type, index) {
+            if (type === 'student') {
+                const scoreInput = document.getElementById('studentScoreInput-' + index);
+                students[index].score = students[index].score + parseInt(scoreInput.value);
+            } else if (type === 'team') {
+                const scoreInput = document.getElementById('teamScoreInput-' + index);
+                teams[index].score = parseInt(scoreInput.value);
+            }
+            displayStudents();
+            displayTeams();
+        }
+
+        function displayStudents() {
+            const studentTable = document.getElementById('studentTable');
+            studentTable.innerHTML = '';
+
+            for (let i = 0; i < students.length; i++) {
+                const row = studentTable.insertRow();
+                row.insertCell().textContent = students[i].name;
+                row.insertCell().textContent = students[i].score;
+                const cell = row.insertCell();
+                cell.innerHTML = `
+                    <input type="number" min="0" max="100" id="studentScoreInput-${i}" value="${students[i].score}">
+                    <button onclick="updateScore('student', ${i})">점수 부여</button>
+                `;
+            }
+        }
+
+        function displayTeams() {
+            const teamTable = document.getElementById('teamTable');
+            teamTable.innerHTML = '';
+
+            for (let i = 0; i < teams.length; i++) {
+                const row = teamTable.insertRow();
+                row.insertCell().textContent = teams[i].name;
+                row.insertCell().textContent = teams[i].score;
+                const cell = row.insertCell();
+                cell.innerHTML = `
+                    <input type="number" min="0" max="100" id="teamScoreInput-${i}" value="${teams[i].score}">
+                    <button onclick="updateScore('team', ${i})">점수 부여</button>
+                `;
+            }
+        }
+
+        function showRankings() {
+            rankTable.innerHTML = '';
+            students.sort((a, b) => b.score - a.score);
+            for (let i = 0; i < students.length; i++) {
+                const row = rankTable.insertRow();
+                row.insertCell().textContent = i + 1;
+                row.insertCell().textContent = students[i].name;
+                row.insertCell().textContent = students[i].score;
+            }
+        }
+    </script>
+</body>
+</html>
