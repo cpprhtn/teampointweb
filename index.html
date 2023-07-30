@@ -164,19 +164,6 @@
         const students = [];
         const teams = {};
 
-        // document.getElementById('studentName').addEventListener('keypress', function(event) {
-        //     if (event.key === 'Enter') {
-        //         addStudent();
-        //     }
-        // });
-        
-        // // Enter(엔터) 키를 눌렀을 때 동작하도록 이벤트 리스너 추가
-        // document.getElementById('addButton').addEventListener('keypress', function(event) {
-        //     if (event.key === 'Enter') {
-        //         addStudent();
-        //     }
-        // });
-
         function addStudent() {
             const studentName = document.getElementById('studentName').value;
             const teamName = prompt(`${studentName}의 팀명을 입력하세요:`);
@@ -185,6 +172,7 @@
                 teams[teamName] = {
                     name: teamName,
                     members: [],
+                    teamscore: 0,
                 };
             }
 
@@ -195,17 +183,18 @@
             showRankings();
         }
 
-        function updateScore(type, teamName, index) {
+        function updateScore(type, teamName, index, studentIndex) {
             if (type === 'team') {
                 const scoreInput = document.getElementById(`teamScoreInput-${teamName}`);
                 const score = parseInt(scoreInput.value);
+                teams[teamName].teamscore += score;
                 teams[teamName].members.forEach((member) => {
                     member.score += score;
                 });
             } else if (type === 'student') {
                 const scoreInput = document.getElementById(`studentScoreInput-${index}`);
                 const score = parseInt(scoreInput.value);
-                teams[teamName].members[index].score += score;
+                teams[teamName].members[studentIndex].score += score;
             }
 
             displayStudents();
@@ -228,6 +217,8 @@
             const studentTable = document.getElementById('studentTable');
             studentTable.innerHTML = '';
 
+            let cnt = 0;
+
             for (const teamName in teams) {
                 const members = teams[teamName].members;
                 for (let i = 0; i < members.length; i++) {
@@ -235,35 +226,16 @@
                     row.insertCell().textContent = members[i].name;
                     row.insertCell().textContent = teamName;
                     row.insertCell().textContent = members[i].score;
+                    cnt++;
                     const cell = row.insertCell();
                     cell.innerHTML = `
-                        <input type="number" min="0" max="100" id="studentScoreInput-${i}" value="${members[i].score}">
-                        <button onclick="updateScore('student', '${teamName}', ${i})">점수 부여</button>
+                        <input type="number" min="0" max="100000" id="studentScoreInput-${cnt}" value="0">
+                        <button onclick="updateScore('student', '${teamName}', ${cnt}, ${i})">점수 부여</button>
                         <button onclick="updateStudentName('${teamName}', ${i})">수정</button>
                     `;
                 }
             }
         }
-
-        // function displayStudents() {
-        //     const studentTable = document.getElementById('studentTable');
-        //     studentTable.innerHTML = '';
-
-        //     for (const teamName in teams) {
-        //         const members = teams[teamName].members;
-        //         for (let i = 0; i < members.length; i++) {
-        //             const row = studentTable.insertRow();
-        //             row.insertCell().textContent = members[i].name;
-        //             row.insertCell().textContent = teamName;
-        //             row.insertCell().textContent = members[i].score;
-        //             const cell = row.insertCell();
-        //             cell.innerHTML = `
-        //                 <input type="number" min="0" max="100" id="studentScoreInput-${i}" value="0">
-        //                 <button onclick="updateScore('student', '${teamName}', ${i})">점수 부여</button>
-        //             `;
-        //         }
-        //     }
-        // }
 
         function displayTeams() {
             const teamTable = document.getElementById('teamTable');
@@ -271,14 +243,15 @@
 
             for (const teamName in teams) {
                 const members = teams[teamName].members;
+                let teamscores = teams[teamName].teamscore;
                 const row = teamTable.insertRow();
                 row.insertCell().textContent = teamName;
                 row.insertCell().textContent = members.map((member) => member.name).join(', ');
-                row.insertCell().textContent = members[0].score; // Displaying the first member's score for simplicity
+                row.insertCell().textContent = teamscores; // Displaying the first member's score for simplicity
                 const cell = row.insertCell();
                 cell.innerHTML = `
-                    <input type="number" min="0" max="100" id="teamScoreInput-${teamName}" value="0">
-                    <button onclick="updateScore('team', '${teamName}', 0)">점수 부여</button>
+                    <input type="number" min="0" max="100000" id="teamScoreInput-${teamName}" value="0">
+                    <button onclick="updateScore('team', '${teamName}', 0, 0)">점수 부여</button>
                 `;
             }
         }
@@ -286,10 +259,10 @@
         function showRankings() {
             const rankTable = document.getElementById('rankTable');
             rankTable.innerHTML = '';
+            
             const sortedTeams = Object.values(teams).sort((a, b) => {
-                const totalScoreA = a.members.reduce((acc, cur) => acc + cur.score, 0);
-                const totalScoreB = b.members.reduce((acc, cur) => acc + cur.score, 0);
-                return totalScoreB - totalScoreA;
+                // Compare teams based on their total teamscore
+                return b.teamscore - a.teamscore;
             });
 
             for (let i = 0; i < sortedTeams.length; i++) {
@@ -298,11 +271,6 @@
                 row.insertCell().textContent = sortedTeams[i].name;
             }
         }
-
-        function sortStudentsByName() {
-            students.sort((a, b) => a.name.localeCompare(b.name));
-        }
-
 
         // Enter(엔터) 키를 눌렀을 때 동작하도록 이벤트 리스너 추가
         document.getElementById('studentName').addEventListener('keypress', function(event) {
